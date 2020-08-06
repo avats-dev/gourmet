@@ -51,31 +51,9 @@ def get_string_from_image(image: Image.Image) -> bytes:
     image.save(ofi,"JPEG")
     return ofi.getvalue()
 
-def get_string_from_pixbuf(pb: GdkPixbuf.Pixbuf) -> bytes:
-    fn = tempfile.mktemp('jpg')
-    pb.save(fn,'jpeg')
-    with open(fn, 'rb') as f:
-        return f.read()
-
 def get_pixbuf_from_jpg(raw: bytes) -> GdkPixbuf.Pixbuf:
-    """Given raw data of a jpeg file, we return a GdkPixbuf.Pixbuf
-    """
-    # o=open('/tmp/recimage.jpg','w')
-    fn=write_image_tempfile(raw,name=TMPFILE)
-    i=Gtk.Image()
-    i.set_from_file(fn)
-    return i.get_pixbuf()
-
-def write_image_tempfile (raw, name=None, ext=".jpg"):
-    """Write a temporary image file.
-
-    If not given a name, generate one.
-    """
-    if name:
-        fn = os.path.join(tempfile.gettempdir(),
-                            name + ext)
-    else:
-        fn = tempfile.mktemp(ext)
-    with open(fn, 'wb') as o:
-        o.write(raw)
-    return fn
+    """Create a GdkPixbuf.Pixbuf from bytes"""
+    glib_bytes = GLib.Bytes.new(raw)
+    stream = Gio.MemoryInputStream.new_from_bytes(glib_bytes)
+    pixbuf = GdkPixbuf.Pixbuf.new_from_stream(stream)
+    return pixbuf
